@@ -13,5 +13,3 @@ object MainBot extends TelegramBot with Polling with Commands {
 
   onCommand('hello) { implicit msg => reply("My token is SAFE!") }
 }
-
-MainBot.run()
