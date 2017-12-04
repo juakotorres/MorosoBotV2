@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS debt (
   user_to         INTEGER REFERENCES telegram_user (id),
   amount          INTEGER NOT NULL,
   indebted_amount INTEGER NOT NULL,
-  active          BOOLEAN DEFAULT TRUE,
+  active          BOOLEAN DEFAULT 1,
   msg_id          INTEGER REFERENCES reason (id),
   creation_time   DATETIME DEFAULT CURRENT_TIMESTAMP
 );
