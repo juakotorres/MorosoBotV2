@@ -11,5 +11,12 @@ object MainBot extends TelegramBot with Polling with Commands {
     .envOrNone("BOT_TOKEN")
     .getOrElse(Source.fromFile("bot.token").getLines().mkString)
 
-  onCommand('hello) { implicit msg => reply("My token is SAFE!") }
+  onCommand('start) { implicit msg => reply(  "Bueno cabros se viene la hora de pagar. \n")}
+
+  onCommand('help) { implicit msg => reply("Usar los comandos para agregar las deudas pendientes. \n" +
+                                            "Agregar deuda con commando /ledebo o /medebe @tagdeudor monto\n" +
+                                            "Saldar deuda o ya pago usar commando /mepago @tagdeudor monto\n" +
+                                            "Mostrar deudas pendientes del usuario usar commando /misdeudas\n" +
+                                            "Para ver mis deudores /paguenctm")}
+
 }
