@@ -21,6 +21,8 @@ object DBInterface {
     }
 
     private def getUserId(user: String): Int = {
+        if (!existsUser(user))
+            addUser(user)
         sql"SELECT id FROM telegram_user WHERE tag = $user"
             .map(res => res.int("id"))
             .single().apply().getOrElse(-1)
