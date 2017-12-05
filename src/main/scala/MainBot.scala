@@ -3,6 +3,7 @@ import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.methods.ParseMode
 
 import scala.io.Source
+import scala.util.Try
 
 object MainBot extends TelegramBot with Polling with Commands {
     lazy val token: String = scala.util.Properties
@@ -32,7 +33,7 @@ object MainBot extends TelegramBot with Polling with Commands {
             }
             builder += s"Total: *$sum*\n"
         }
-        if(sum == 0)
+        if (sum == 0)
             builder += "No hay deudas m3n"
         reply(builder, Some(ParseMode.Markdown))
     }
@@ -48,9 +49,69 @@ object MainBot extends TelegramBot with Polling with Commands {
             }
             builder += s"Total: *$sum*\n"
         }
-        if(sum == 0)
+        if (sum == 0)
             builder += "No hay money m3n"
         reply(builder, Some(ParseMode.Markdown))
+    }
+
+    onCommand('medebe) { implicit msg =>
+        withArgs { args =>
+            val user = msg.from.get.username.get
+            val value = args.last
+            if(value.forall(c => c.isDigit)) {
+                val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
+                if (tags.length <= 0)
+                    reply("No tiene tags m3n")
+                else {
+                    val message = args.slice(tags.length, args.length - 1).mkString(" ")
+                    DBInterface.addMultipleDebt(tags.toList, user, value.toInt, message)
+                    reply("Oc")
+                }
+            }
+            else{
+                reply("Monto no válido m3n")
+            }
+        }
+    }
+
+    onCommand('ledebo) { implicit msg =>
+        withArgs { args =>
+            val user = msg.from.get.username.get
+            val value = args.last
+            val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
+            if (tags.length > 1 || tags.length <= 0) {
+                reply("No puedes realizar esta operación m3n")
+            }
+            else if(value.forall(c => c.isDigit)){
+                val message = args.slice(tags.length, args.length - 1).mkString(" ")
+                DBInterface.addSingleDebt(user, tags.head, value.toInt, message)
+                reply("Oc")
+            }
+            else{
+                reply("Monto inválido m3n")
+            }
+        }
+    }
+
+    onCommand('mepago) { implicit msg =>
+        withArgs { args =>
+            val user = msg.from.get.username.get
+            val value = args.last
+            val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
+            if (tags.length > 1 || tags.length <= 0) {
+                reply("No puedes realizar esta operación m3n")
+            }
+            else if(value.forall(c => c.isDigit)){
+                val res = DBInterface.addPayment(tags.head, user, value.toInt)
+                if(res)
+                    reply("Oc")
+                else
+                    reply("Estás manqueando m3n, no tienes deuda o pagaste extra")
+            }
+            else{
+                reply("Monto inválido m3n")
+            }
+        }
     }
 
 }
