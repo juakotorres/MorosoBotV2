@@ -3,7 +3,7 @@ import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.methods.ParseMode
 
 import scala.io.Source
-import scala.util.Try
+import scala.util.Random
 
 object MainBot extends TelegramBot with Polling with Commands {
     lazy val token: String = scala.util.Properties
@@ -112,6 +112,12 @@ object MainBot extends TelegramBot with Polling with Commands {
                 reply("Monto inválido m3n")
             }
         }
+    }
+
+    onCommand('all) { implicit msg =>
+        val names = Array("Pelao", "Huan", "Juaki", "Gabriel", "Beli", "Americo", "Sergio", "Jaev", "Rodrigo")
+        val myst = Random.shuffle(names.toList)
+        reply(s"/${myst.head}X${myst(1)}")
     }
 
 }
