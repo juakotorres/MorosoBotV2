@@ -6,3 +6,6 @@ target
 project/target
 *.iml
 moroso.db
+out/*
+project/build.properties
+**/META-INF

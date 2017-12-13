@@ -9,3 +9,11 @@ libraryDependencies += "info.mukel" %% "telegrambot4s" % "3.0.14"
 libraryDependencies += "org.scalikejdbc" %% "scalikejdbc" % "3.1.0"
 
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.7.2"
+
+mainClass in (Compile, run) := Some("Main")
+
+assemblyMergeStrategy in assembly := {
+    case PathList("reference.conf") => MergeStrategy.concat
+    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+    case x => MergeStrategy.first
+}
