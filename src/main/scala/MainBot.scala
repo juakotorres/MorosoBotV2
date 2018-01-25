@@ -119,13 +119,14 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     onCommand('all) { implicit msg =>
 
-
         val debts = DBInterface.getAggregatedDebts
         Graph.restart()
         Graph.addDebts(debts)
         Graph.draw()
         request(SendPhoto(msg.source, InputFile(Paths.get("grafo.png"))))
+    }
 
+    onCommand('otp) { implicit msg =>
         val names = Array("Pelao", "Huan", "Juaki", "Gabriel", "Beli", "Americo", "Sergio", "Jaev", "Rodrigo")
         val myst = Random.shuffle(names.toList)
         reply(s"/${myst.head}X${myst(1)}")
