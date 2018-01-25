@@ -1,6 +1,9 @@
+import java.nio.file.Paths
+
 import info.mukel.telegrambot4s.api.declarative.Commands
 import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
-import info.mukel.telegrambot4s.methods.ParseMode
+import info.mukel.telegrambot4s.methods.{ParseMode, SendPhoto}
+import info.mukel.telegrambot4s.models.InputFile
 
 import scala.io.Source
 import scala.util.Random
@@ -115,6 +118,15 @@ object MainBot extends TelegramBot with Polling with Commands {
     }
 
     onCommand('all) { implicit msg =>
+
+        val debts = DBInterface.getAggregatedDebts
+        Graph.restart()
+        Graph.addDebts(debts)
+        Graph.draw()
+        request(SendPhoto(msg.source, InputFile(Paths.get("grafo.png"))))
+    }
+
+    onCommand('otp) { implicit msg =>
         val names = Array("Pelao", "Huan", "Juaki", "Gabriel", "Beli", "Americo", "Sergio", "Jaev", "Rodrigo")
         val myst = Random.shuffle(names.toList)
         reply(s"/${myst.head}X${myst(1)}")
