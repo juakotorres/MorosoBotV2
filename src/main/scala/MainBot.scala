@@ -1,9 +1,10 @@
 import java.nio.file.Paths
+import java.text.SimpleDateFormat
 
 import info.mukel.telegrambot4s.api.declarative.Commands
 import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
 import info.mukel.telegrambot4s.methods.{ParseMode, SendPhoto}
-import info.mukel.telegrambot4s.models.InputFile
+import info.mukel.telegrambot4s.models.{InputFile, Message}
 
 import scala.io.Source
 import scala.util.Random
@@ -12,6 +13,25 @@ object MainBot extends TelegramBot with Polling with Commands {
     lazy val token: String = scala.util.Properties
         .envOrNone("BOT_TOKEN")
         .getOrElse(Source.fromFile("bot.token").getLines().mkString)
+
+    private def logCommand(msg: Message): Unit = {
+        val date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(msg.date * 1000L)
+        val txt = msg.text.getOrElse("ERROR: NO TEXT")
+
+        val from = msg.from
+        if (from.isEmpty) {
+            println(Console.YELLOW + s"[$date]" + Console.RED + " |  ERROR: NO FROM | " + Console.WHITE + txt)
+            return
+        }
+        val username = from.get.username
+        if (username.isEmpty) {
+            println(Console.YELLOW + s"[$date]" + Console.RED + " | ERROR: NO USERNAME | " + Console.WHITE + txt)
+            return
+        }
+        val user = username.get
+
+        println(Console.YELLOW + s"[$date] " + Console.BLUE + s"@$user: " + Console.WHITE + txt)
+    }
 
     onCommand('start) { implicit msg =>
         reply("Bueno cabros se viene la hora de pagar. \n")
@@ -26,6 +46,7 @@ object MainBot extends TelegramBot with Polling with Commands {
     }
 
     onCommand('misdeudas) { implicit msg =>
+        logCommand(msg)
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
@@ -42,6 +63,7 @@ object MainBot extends TelegramBot with Polling with Commands {
     }
 
     onCommand('paguenctm) { implicit msg =>
+        logCommand(msg)
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
@@ -59,9 +81,10 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     onCommand('medebe) { implicit msg =>
         withArgs { args =>
+            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
-            if(value.forall(c => c.isDigit)) {
+            if (value.forall(c => c.isDigit)) {
                 val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
                 if (tags.length <= 0)
                     reply("No tiene tags m3n")
@@ -71,7 +94,7 @@ object MainBot extends TelegramBot with Polling with Commands {
                     reply("Oc")
                 }
             }
-            else{
+            else {
                 reply("Monto no válido m3n")
             }
         }
@@ -79,18 +102,19 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     onCommand('ledebo) { implicit msg =>
         withArgs { args =>
+            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
             val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
             if (tags.length > 1 || tags.length <= 0) {
                 reply("No puedes realizar esta operación m3n")
             }
-            else if(value.forall(c => c.isDigit)){
+            else if (value.forall(c => c.isDigit)) {
                 val message = args.slice(tags.length, args.length - 1).mkString(" ")
                 DBInterface.addSingleDebt(user, tags.head, value.toInt, message)
                 reply("Oc")
             }
-            else{
+            else {
                 reply("Monto inválido m3n")
             }
         }
@@ -98,27 +122,28 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     onCommand('mepago) { implicit msg =>
         withArgs { args =>
+            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
             val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
             if (tags.length > 1 || tags.length <= 0) {
                 reply("No puedes realizar esta operación m3n")
             }
-            else if(value.forall(c => c.isDigit)){
+            else if (value.forall(c => c.isDigit)) {
                 val res = DBInterface.addPayment(tags.head, user, value.toInt)
-                if(res)
+                if (res)
                     reply("Oc")
                 else
                     reply("Estás manqueando m3n, no tienes deuda o pagaste extra")
             }
-            else{
+            else {
                 reply("Monto inválido m3n")
             }
         }
     }
 
     onCommand('all) { implicit msg =>
-
+        logCommand(msg)
         val debts = DBInterface.getAggregatedDebts
         Graph.restart()
         Graph.addDebts(debts)
