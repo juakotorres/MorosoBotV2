@@ -54,7 +54,7 @@ object MainBot extends TelegramBot with Polling with Commands {
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
-            builder += s"Deudas de @${user.username.getOrElse("")}\n"
+            builder += s"Deudas de @${escapeMarkdown(user.username.getOrElse(""))}\n"
             DBInterface.getUserDebts(user.username.getOrElse("")).foreach { debt =>
                 builder += s"*${debt.amount}* a @${escapeMarkdown(debt.user_to)} - ${escapeMarkdown(debt.reason)}\n"
                 sum += debt.amount
@@ -71,7 +71,7 @@ object MainBot extends TelegramBot with Polling with Commands {
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
-            builder += s"Deudas a @${user.username.getOrElse("")}\n"
+            builder += s"Deudas a @${escapeMarkdown(user.username.getOrElse(""))}\n"
             DBInterface.getUserIncomes(user.username.getOrElse("")).foreach { debt =>
                 builder += s"*${debt.amount}* de @${escapeMarkdown(debt.user_from)} - ${escapeMarkdown(debt.reason)}\n"
                 sum += debt.amount
