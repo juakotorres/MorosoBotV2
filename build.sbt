@@ -10,6 +10,8 @@ libraryDependencies += "org.scalikejdbc" %% "scalikejdbc" % "3.1.0"
 
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.7.2"
 
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.6.4"
+
 mainClass in (Compile, run) := Some("Main")
 
 assemblyMergeStrategy in assembly := {

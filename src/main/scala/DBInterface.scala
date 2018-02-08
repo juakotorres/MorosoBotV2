@@ -5,6 +5,12 @@ object DBInterface {
     Class.forName("org.sqlite.JDBC")
     ConnectionPool.singleton("jdbc:sqlite:moroso.db", null, null)
 
+    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+        enabled = true,
+        singleLineMode = true,
+        logLevel = 'info
+    )
+
     implicit val session = AutoSession
 
     case class Debt(user_from: String, user_to: String, reason: String, amount: Int)
