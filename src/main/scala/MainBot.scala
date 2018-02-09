@@ -37,6 +37,8 @@ object MainBot extends TelegramBot with Polling with Commands {
         s.replace("_","\\_").replace("*","\\*")
     }
 
+    private var graphHasChanged = true
+
     onCommand('start) { implicit msg =>
         reply("Bueno cabros se viene la hora de pagar. \n")
     }
@@ -95,6 +97,7 @@ object MainBot extends TelegramBot with Polling with Commands {
                 else {
                     val message = args.slice(tags.length, args.length - 1).mkString(" ")
                     DBInterface.addMultipleDebt(tags.toList, user, value.toInt, message)
+                    graphHasChanged = true
                     reply("Oc")
                 }
             }
@@ -116,6 +119,7 @@ object MainBot extends TelegramBot with Polling with Commands {
             else if (value.forall(c => c.isDigit)) {
                 val message = args.slice(tags.length, args.length - 1).mkString(" ")
                 DBInterface.addSingleDebt(user, tags.head, value.toInt, message)
+                graphHasChanged = true
                 reply("Oc")
             }
             else {
@@ -135,6 +139,7 @@ object MainBot extends TelegramBot with Polling with Commands {
             }
             else if (value.forall(c => c.isDigit)) {
                 val res = DBInterface.addPayment(tags.head, user, value.toInt)
+                graphHasChanged = true
                 if (res)
                     reply("Oc")
                 else
@@ -148,10 +153,13 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     onCommand('all) { implicit msg =>
         logCommand(msg)
-        val debts = DBInterface.getAggregatedDebts
-        Graph.restart()
-        Graph.addDebts(debts)
-        Graph.draw()
+        if(graphHasChanged) {
+            val debts = DBInterface.getAggregatedDebts
+            Graph.restart()
+            Graph.addDebts(debts)
+            Graph.draw()
+            graphHasChanged = false
+        }
         request(SendPhoto(msg.source, InputFile(Paths.get("grafo.png"))))
     }
 
