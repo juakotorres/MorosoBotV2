@@ -39,3 +39,7 @@ CREATE VIEW IF NOT EXISTS active_debt AS
     sum(indebted_amount) AS amount
   FROM debt
   WHERE active = 1 GROUP BY user_to, user_from;
+
+CREATE TABLE IF NOT EXISTS blacklist (
+  tag VARCHAR(20) NOT NULL
+);

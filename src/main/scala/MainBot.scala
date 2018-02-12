@@ -1,9 +1,9 @@
 import java.nio.file.Paths
 import java.text.SimpleDateFormat
 
-import info.mukel.telegrambot4s.api.declarative.Commands
+import info.mukel.telegrambot4s.api.declarative.{Action, Commands}
 import info.mukel.telegrambot4s.api.{Polling, TelegramBot}
-import info.mukel.telegrambot4s.methods.{ParseMode, SendPhoto}
+import info.mukel.telegrambot4s.methods.{ChatAction, ParseMode, SendChatAction, SendPhoto}
 import info.mukel.telegrambot4s.models.{InputFile, Message}
 
 import scala.io.Source
@@ -39,6 +39,18 @@ object MainBot extends TelegramBot with Polling with Commands {
 
     private var graphHasChanged = true
 
+    private def logAndRestrict(next: Action[Message]) : Action[Message] = { implicit msg =>
+        logCommand(msg)
+        msg.from.foreach { user =>
+            if(DBInterface.isBanned(user.username.getOrElse(""))){
+                reply("...")
+            }
+            else{
+                next.apply(msg)
+            }
+        }
+    }
+
     onCommand('start) { implicit msg =>
         reply("Bueno cabros se viene la hora de pagar. \n")
     }
@@ -51,8 +63,7 @@ object MainBot extends TelegramBot with Polling with Commands {
             "Para ver mis deudores /paguenctm")
     }
 
-    onCommand('misdeudas) { implicit msg =>
-        logCommand(msg)
+    onCommand('misdeudas)(logAndRestrict { implicit msg =>
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
@@ -66,10 +77,9 @@ object MainBot extends TelegramBot with Polling with Commands {
         if (sum == 0)
             builder += "No hay deudas m3n"
         reply(builder, Some(ParseMode.Markdown))
-    }
+    })
 
-    onCommand('paguenctm) { implicit msg =>
-        logCommand(msg)
+    onCommand('paguenctm)(logAndRestrict { implicit msg =>
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
@@ -83,11 +93,10 @@ object MainBot extends TelegramBot with Polling with Commands {
         if (sum == 0)
             builder += "No hay money m3n"
         reply(builder, Some(ParseMode.Markdown))
-    }
+    })
 
-    onCommand('medebe) { implicit msg =>
+    onCommand('medebe)(logAndRestrict { implicit msg =>
         withArgs { args =>
-            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
             if (value.forall(c => c.isDigit)) {
@@ -105,11 +114,10 @@ object MainBot extends TelegramBot with Polling with Commands {
                 reply("Monto no válido m3n")
             }
         }
-    }
+    })
 
-    onCommand('ledebo) { implicit msg =>
+    onCommand('ledebo)(logAndRestrict { implicit msg =>
         withArgs { args =>
-            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
             val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
@@ -126,11 +134,10 @@ object MainBot extends TelegramBot with Polling with Commands {
                 reply("Monto inválido m3n")
             }
         }
-    }
+    })
 
-    onCommand('mepago) { implicit msg =>
+    onCommand('mepago)(logAndRestrict { implicit msg =>
         withArgs { args =>
-            logCommand(msg)
             val user = msg.from.get.username.get
             val value = args.last
             val tags = args.takeWhile(_.startsWith("@")).map(s => s.substring(1))
@@ -149,11 +156,11 @@ object MainBot extends TelegramBot with Polling with Commands {
                 reply("Monto inválido m3n")
             }
         }
-    }
+    })
 
-    onCommand('all) { implicit msg =>
-        logCommand(msg)
+    onCommand('all)(logAndRestrict { implicit msg =>
         if(graphHasChanged) {
+            request(SendChatAction(msg.source, ChatAction.UploadPhoto))
             val debts = DBInterface.getAggregatedDebts
             Graph.restart()
             Graph.addDebts(debts)
@@ -161,12 +168,12 @@ object MainBot extends TelegramBot with Polling with Commands {
             graphHasChanged = false
         }
         request(SendPhoto(msg.source, InputFile(Paths.get("grafo.png"))))
-    }
+    })
 
-    onCommand('otp) { implicit msg =>
+    onCommand('otp)(logAndRestrict { implicit msg =>
         val names = Array("Pelao", "Huan", "Juaki", "Gabriel", "Beli", "Americo", "Sergio", "Jaev", "Rodrigo")
         val myst = Random.shuffle(names.toList)
         reply(s"/${myst.head}X${myst(1)}")
-    }
+    })
 
 }
