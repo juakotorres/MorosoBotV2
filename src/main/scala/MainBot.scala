@@ -42,11 +42,13 @@ object MainBot extends TelegramBot with Polling with Commands {
     }
 
     onCommand('help) { implicit msg =>
-        reply("Usar los comandos para agregar las deudas pendientes. \n" +
-            "Agregar deuda con commando /ledebo o /medebe @tagdeudor monto\n" +
-            "Saldar deuda o ya pago usar commando /mepago @tagdeudor monto\n" +
-            "Mostrar deudas pendientes del usuario usar commando /misdeudas\n" +
-            "Para ver mis deudores /paguenctm")
+        replyMarkup("Puedes usar los siguientes comandos para agregar las deudas pendientes: \n" +
+            "**/medebe** @personas _motivo_ _monto_ : Agregas a una o más @personas que te deben el mismo monto por el mismo motivo. \n" + 
+            "**/ledebo** @persona _motivo_ _monto_ : Te auto-agregas, debiéndole a @persona un monto por el motivo que quieres agregar. \n" +
+            "**/mepago** @persona _monto_ : Declaras que @persona te pagó ese monto para reducir o eliminar su deuda. \n" +
+            "**/misdeudas** : Obtienes una lista de las personas a las que les debes, con sus motivos y montos respectivos. \n" + 
+            "**/paguenctm** : Obtienes una lista de las personas que te deben dinero, con sus motivos y montos respectivos. \n" +
+            "**/all** : Muestra un grafo de deudas. Los @tags en **verde** son acreedores, y los @tags en **rojo** son deudores.")
     }
 
     onCommand('misdeudas) { implicit msg =>
