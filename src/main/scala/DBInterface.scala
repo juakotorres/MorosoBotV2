@@ -91,6 +91,10 @@ object DBInterface {
     def addPayment(userFrom: String, userTo: String, amount: Int): Boolean = {
         val idFrom = getUserId(userFrom)
         val idTo = getUserId(userTo)
+        addPaymentById(idFrom, idTo, amount)
+    }
+
+    private def addPaymentById(idFrom: Int, idTo: Int, amount: Int): Boolean = {
         var remainder = amount
         var updates = List[(Int, Int)]()
 
@@ -115,6 +119,16 @@ object DBInterface {
         }
 
         remainder <= 0
+    }
+
+    def simpifyDebts(): Boolean ={
+        val commonDebtors: List[(Int,Int,Int)] = sql"select a1.user_from, a1.user_to, a2.amount as common_debt from active_debt as a1 join active_debt as a2 on a1.user_from = a2.user_to and a2.user_from = a1.user_to where a1.amount >= a2.amount"
+                .map(res => (res.int("user_from"), res.int("user_to"), res.int("common_debt"))).list().apply()
+        commonDebtors.foreach { res =>
+            addPaymentById(res._1, res._2, res._3)
+            addPaymentById(res._2, res._1, res._3)
+        }
+        commonDebtors.nonEmpty
     }
 
 

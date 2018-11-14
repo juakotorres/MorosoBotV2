@@ -161,4 +161,12 @@ object MainBot extends TelegramBot with Polling with Commands {
         reply(s"/${myst.head}X${myst(1)}")
     }
 
+    onCommand('simplify) { implicit msg =>
+        val simplified = DBInterface.simpifyDebts()
+        if(simplified)
+            reply("Deudas simplifica3 m3n")
+        else
+            reply("Todo ok nada que hacer \uD83D\uDC4C")
+    }
+
 }
