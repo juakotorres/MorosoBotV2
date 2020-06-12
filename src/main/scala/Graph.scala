@@ -15,7 +15,7 @@ object Graph {
 
     val width = 700
     val height = 700
-    val radius = 200
+    val radius = 280
     val circleRadius = 25
     var nodesHash : collection.mutable.HashMap[String, List[Double]] = collection.mutable.HashMap.empty[String, List[Double]]
     var colorHash : collection.mutable.HashMap[String, Color] = collection.mutable.HashMap.empty[String, Color]
@@ -44,7 +44,7 @@ object Graph {
     val numberOfCircles = nodes.size
     val arcDistance = 2 * Math.PI / numberOfCircles
     var iterator = 0
-    var font = new Font("Batang", Font.PLAIN, 20)
+    val font = new Font("DejaVuSansCondensed", Font.PLAIN, 20)
     g.setFont(font)
 
     nodes.foreach(node => {
@@ -52,7 +52,7 @@ object Graph {
       val ycirle = ycenter + radius*Math.sin(arcDistance*iterator)
 
       nodesHash ++= Map(node -> List(xcirle, ycirle))
-      colorHash ++= Map(node -> Color.GREEN)
+      colorHash ++= Map(node -> Color.decode("#4CAF50"))
       iterator = iterator + 1
     })
 
@@ -63,13 +63,13 @@ object Graph {
       val from = deudores.head
       val to = deudores.tail.head
 
-      colorHash(from) = Color.RED
+      colorHash(from) = Color.decode("#F44336")
 
       val fromCircle : List[Double] = nodesHash(from)
       val toCircle : List[Double] = nodesHash(to)
 
       g.setStroke(new BasicStroke())
-      g.setColor(Color.BLACK)
+      g.setColor(Color.GRAY)
       g.draw(new Line2D.Double(fromCircle.head, fromCircle.tail.head, toCircle.head, toCircle.tail.head))
       val x0 = fromCircle.head.toInt
       val y0 = fromCircle.tail.head.toInt
@@ -78,12 +78,15 @@ object Graph {
       val magnitude = Math.sqrt(Math.pow(x1-x0,2) + Math.pow(y1-y0,2))
       val xu = (x1 - x0) / magnitude
       val yu = (y1 - y0) / magnitude
-
       drawArrow(g, x0, y0, x1 - (circleRadius*xu).toInt, y1 - (circleRadius*yu).toInt)
+
+      g.setColor(Color.BLACK)
       g.drawString(amount.toString, ((fromCircle.head + toCircle.head)/2).toInt, ((fromCircle.tail.head + toCircle.tail.head)/2).toInt)
     })
 
     iterator = 0
+
+    val metrics = g.getFontMetrics(font)
 
     nodes.foreach(node => {
       val xcirle = xcenter + radius*Math.cos(arcDistance*iterator)
@@ -95,11 +98,9 @@ object Graph {
       g.setColor(Color.BLACK)
 
       // Get the FontMetrics// Get the FontMetrics
-      val metrics = g.getFontMetrics(font)
-      val stringLen = g.getFontMetrics.getStringBounds(node, g).getWidth.asInstanceOf[Int]
-      val start = circleRadius - stringLen / 2
+      val stringLen = metrics.getStringBounds(node, g).getCenterX.asInstanceOf[Int]
 
-      g.drawString(node, xcirle.toInt + start, ycirle.toInt)
+      g.drawString(node, xcirle.toInt - stringLen, ycirle.toInt + 5)
       iterator = iterator + 1
 
     })

@@ -117,5 +117,12 @@ object DBInterface {
         remainder <= 0
     }
 
+    def isBanned(tag: String): Boolean = {
+        if(tag == "") return true
+        sql"SELECT count(*) AS c FROM blacklist WHERE tag = $tag"
+            .map(res => res.int("c"))
+            .single().apply().getOrElse(0) > 0
+    }
+
 
 }
