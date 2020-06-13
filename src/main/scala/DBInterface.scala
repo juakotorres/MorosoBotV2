@@ -69,6 +69,20 @@ object DBInterface {
             .list().apply()
     }
 
+    def getAggregatedUserDebts(user: String): List[Debt] = {
+      val idUser = getUserId(user)
+      sql"SELECT u.tag, SUM(d.indebted_amount) as indebted_amount, GROUP_CONCAT(r.message, ', ') as message FROM debt AS d LEFT JOIN telegram_user AS u ON d.user_to = u.id LEFT OUTER JOIN reason AS r ON r.id = d.msg_id WHERE d.active = 1 AND d.user_from = $idUser GROUP BY u.tag"
+        .map(res => Debt(user, res.string("tag"), if (res.string("message") == null) "" else res.string("message"), res.int("indebted_amount")))
+        .list().apply()
+    }
+
+    def getAggregatedUserIncomes(user: String): List[Debt] = {
+      val idUser = getUserId(user)
+      sql"SELECT u.tag, SUM(d.indebted_amount) as indebted_amount, GROUP_CONCAT(r.message, ', ') as message FROM debt AS d LEFT JOIN telegram_user AS u ON d.user_from = u.id LEFT OUTER JOIN reason AS r ON r.id = d.msg_id WHERE d.active = 1 AND d.user_to = $idUser GROUP BY u.tag"
+        .map(res => Debt(res.string("tag"), user, if (res.string("message") == null) "" else res.string("message"), res.int("indebted_amount")))
+        .list().apply()
+    }
+
     def getUserIncomes(user: String): List[Debt] = {
         val idUser = getUserId(user)
         sql"SELECT u.tag, d.indebted_amount, r.message FROM debt AS d LEFT JOIN telegram_user AS u ON d.user_from = u.id LEFT OUTER JOIN reason AS r ON r.id = d.msg_id WHERE d.active = 1 AND d.user_to = $idUser"

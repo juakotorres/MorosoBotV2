@@ -79,7 +79,24 @@ object MainBot extends TelegramBot with Polling with Commands {
         reply(builder, Some(ParseMode.Markdown))
     })
 
-    onCommand('paguenctm)(logAndRestrict { implicit msg =>
+    onCommand('misdeudastotales)(logAndRestrict { implicit msg =>
+      var builder = ""
+      var sum = 0
+      msg.from.foreach { user =>
+        builder += s"Deudas de @${escapeMarkdown(user.username.getOrElse(""))}\n"
+        DBInterface.getAggregatedUserDebts(user.username.getOrElse("")).foreach { debt =>
+          builder += s"*${debt.amount}* a @${escapeMarkdown(debt.user_to)} - ${escapeMarkdown(debt.reason)}\n"
+          sum += debt.amount
+        }
+        builder += s"Total: *$sum*\n"
+      }
+      if (sum == 0)
+        builder += "No hay deudas m3n"
+      reply(builder, Some(ParseMode.Markdown))
+    })
+
+
+  onCommand('paguenctm)(logAndRestrict { implicit msg =>
         var builder = ""
         var sum = 0
         msg.from.foreach { user =>
@@ -94,6 +111,22 @@ object MainBot extends TelegramBot with Polling with Commands {
             builder += "No hay money m3n"
         reply(builder, Some(ParseMode.Markdown))
     })
+
+  onCommand('paguenhdp)(logAndRestrict { implicit msg =>
+    var builder = ""
+    var sum = 0
+    msg.from.foreach { user =>
+      builder += s"Deudas a @${escapeMarkdown(user.username.getOrElse(""))}\n"
+      DBInterface.getAggregatedUserIncomes(user.username.getOrElse("")).foreach { debt =>
+        builder += s"*${debt.amount}* de @${escapeMarkdown(debt.user_from)} - ${escapeMarkdown(debt.reason)}\n"
+        sum += debt.amount
+      }
+      builder += s"Total: *$sum*\n"
+    }
+    if (sum == 0)
+      builder += "No hay money m3n"
+    reply(builder, Some(ParseMode.Markdown))
+  })
 
     onCommand('medebe)(logAndRestrict { implicit msg =>
         withArgs { args =>
